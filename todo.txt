@@ -1,0 +1,11 @@
+- (DONE) read input from a text file
+- read input typed in on the web page
+- (DONE) divide info for the different robots
+- (DONE) check all robot's starting positions are inside the map
+- (DONE) get final position for all robots
+- (DONE) be able to mark the "scent" square and don't let following robots fall from there
+- print on the screen the final positions
+- (maybe) set a max number of robots
+- keep in mind computational complexity
+- coordenates update (max num)
+- tests
