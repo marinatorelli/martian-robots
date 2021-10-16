@@ -1,11 +1,14 @@
 - (DONE) read input from a text file
-- read input typed in on the web page
 - (DONE) divide info for the different robots
 - (DONE) check all robot's starting positions are inside the map
 - (DONE) get final position for all robots
 - (DONE) be able to mark the "scent" square and don't let following robots fall from there
-- print on the screen the final positions
+- (DONE)print on the screen the final positions
+- (DONE)coordenates update (max num)
+- (DONE)if a robot tries to leave the map where another robot has already left, we ignore that instruction and we continue with the next one.
+
+- when we print the grid in the command line it's upside down.
+- read input typed in on the web page
 - (maybe) set a max number of robots
 - keep in mind computational complexity
-- coordenates update (max num)
 - tests
