@@ -1,16 +1,48 @@
 const http = require('http');
-
+const express = require('express');
 const hostname = '127.0.0.1';
 const port = 3000;
 
+var app = express();
+var server = app.listen(3000, listening);
+
+function listening(){
+  console.log("listening...");
+}
+app.use(express.static("public"));
+// MONGO DB
+/*
+const { MongoClient } = require("mongodb");
+
+// Replace the uri string with your MongoDB deployment's connection string.
+const uri =
+  "mongodb+srv://marinatorelli:1YmPoq1g6INMISBG@cluster0.tiell.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
+const client = new MongoClient(uri);
+
+async function run() {
+  try {
+    await client.connect();
+    const database = client.db('martian-robots');
+    const robotsDB = database.collection('robots-info');
+    // Query for a movie that has the title 'Back to the Future'
+  } finally {
+    // Ensures that the client will close when you finish/error
+    client.close();
+  }
+}
+run().catch(console.dir);
+*/
+/*
 const server = http.createServer((req, res) => {
   res.statusCode = 200;
   res.setHeader('Content-Type', 'text/plain');
   res.end('Hola Mundo');
 });
+*/
 
 // READ THE INPUT FILE
-const fs = require('fs')
+const fs = require('fs');
+const path = require('path');
 
 var map_x = 0;
 var map_y = 0;
@@ -19,6 +51,8 @@ var robots = [];
 var len = 0;
 var num_robots = 0;
 var grid = [];
+var grid_squares = 0;
+var paths_robots = [];
 
 // read input.txt file from the command line
 try {
@@ -39,6 +73,7 @@ function init(){
   len = array.length;
   num_robots = (len-1)/2;
   robots = new Array(num_robots);
+  paths_robots = new Array(num_robots);
 }
 init();
 
@@ -54,8 +89,10 @@ function initialiseGrid(){
       grid[i][ii] = -1;
     }
   }
+  grid_squares = (map_x+1)*(map_y+1);
 }
 initialiseGrid();
+
 
 // create Robot object
   function Robot(){
@@ -90,14 +127,13 @@ initialiseGrid();
           process.exit();
         }
     }
-  
   }
   initialiseRobots();
 
 // control of the movement of robots given by the instructions line
   function movement(){
     for (var i = 0; i < num_robots; ++i){
-
+      paths_robots[i] = [];
       // max number of structions allowed per robot
       if(array[i+i+2].length > 99){
         console.error("A robot can only take less than 100 instructions.");
@@ -105,7 +141,6 @@ initialiseGrid();
       }
 
     Array.from(array[i+i+2]).forEach(element => {
-
       // the robot stays on the same grid point and turns 90 degrees to the left
       if (element == "L"){
         switch (robots[i].curr_direction) {
@@ -123,6 +158,7 @@ initialiseGrid();
                break;
             }
         robots[i].curr_direction = new_direction;
+        paths_robots[i].push([robots[i].curr_x, robots[i].curr_y, robots[i].curr_direction]);
       }
   
       // the robot stays on the same grid point and turns 90 degrees to the right
@@ -142,6 +178,7 @@ initialiseGrid();
                 break;
               }
           robots[i].curr_direction = new_direction;
+          paths_robots[i].push([robots[i].curr_x, robots[i].curr_y, robots[i].curr_direction]);
       }
   
       // the robot moves forward one grid point in the current direction and maintains the same orientation
@@ -166,6 +203,7 @@ initialiseGrid();
                   robots[i].curr_x = new_x;
                   robots[i].curr_y = new_y;
                   robots[i].curr_direction = new_direction;
+                  paths_robots[i].push([robots[i].curr_x, robots[i].curr_y, robots[i].curr_direction]);
                   break;
               case "E":
                   new_x = robots[i].curr_x+1;
@@ -186,6 +224,7 @@ initialiseGrid();
                   robots[i].curr_x = new_x;
                   robots[i].curr_y = new_y;
                   robots[i].curr_direction = new_direction;
+                  paths_robots[i].push([robots[i].curr_x, robots[i].curr_y, robots[i].curr_direction]);
                   break;
               case "S":
                   new_x = robots[i].curr_x;
@@ -206,6 +245,7 @@ initialiseGrid();
                   robots[i].curr_x = new_x;
                   robots[i].curr_y = new_y;
                   robots[i].curr_direction = new_direction;
+                  paths_robots[i].push([robots[i].curr_x, robots[i].curr_y, robots[i].curr_direction]);
                   break;
               case "W":
                   new_x = robots[i].curr_x-1;
@@ -226,14 +266,48 @@ initialiseGrid();
                   robots[i].curr_x = new_x;
                   robots[i].curr_y = new_y;
                   robots[i].curr_direction = new_direction;
+                  paths_robots[i].push([robots[i].curr_x, robots[i].curr_y, robots[i].curr_direction]);
                 break;
               }
       }
     }); // end of forEach()
+    paths_robots[i].unshift([robots[i].init_x, robots[i].init_y, robots[i].init_direction]);
   } // end of for loop
   } // end of function movement
   movement();
 
+  console.log(paths_robots);
+  // MONGO DB
+/*
+  const doc_iteration = {
+    //"iteration_id": ,
+    //"input": ,
+    //"output": 
+  }
+
+  for (var i = 0; i < num_robots; ++i){
+  const doc_robots = { 
+   // "iteration " : ,
+    "robot_id": i,
+    "init_x": robots[i].init_x,
+    "init_y": robots[i].init_y,
+    "init_direction": robots[i].init_direction,
+    //"path": ,
+    // number_of_squares:
+    // of_those_unique:
+    "final_x": robots[i].final_x,
+    "final_y": robots[i].final_y,
+    "final_direction": robots[i].final_direction,
+    "out_of_bounds": robots[i].outOfBounds,
+    //out_of_bounds_path(or number of squares)
+    }
+  }
+
+    const result = robotsDB.insertOne(doc_robots);
+    console.log(
+   'A document was inserted with the _id: ${result.insertedId}',
+    );
+    */
   // print output with the correct format
   function printOutput(){
     final_robots ="";
@@ -254,7 +328,9 @@ initialiseGrid();
   }
   printOutput();
 
+  /*
 // INITIALIZE THE SERVER
 server.listen(port, hostname, () => {
   console.log(`El servidor se está ejecutando en http://${hostname}:${port}/`);
 });
+*/

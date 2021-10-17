@@ -7,8 +7,13 @@
 - (DONE)coordenates update (max num)
 - (DONE)if a robot tries to leave the map where another robot has already left, we ignore that instruction and we continue with the next one.
 
+- json for persistence layer
+- mongodb for fancier persitence layer
 - when we print the grid in the command line it's upside down.
 - read input typed in on the web page
 - (maybe) set a max number of robots
-- keep in mind computational complexity
+- keep in mind computational complexity (clean code, basically)
 - tests
+- api 
+
+mongodb+srv://marinatorelli:<password>@cluster0.tiell.mongodb.net/myFirstDatabase?retryWrites=true&w=majority

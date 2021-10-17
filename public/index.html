@@ -1,0 +1,32 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="index.css">
+        <script src="client.js"></script>
+    </head>
+    <body>
+        <div class="instructions">
+            <p>
+                Please enter the problem input.<br>
+                This is a sample of the input format. <br><br>
+                <p id="copy">
+                    5 3 <br>
+                    1 1 E <br>
+                    RFRFRFRF <br>
+                    3 2 N <br>
+                    FRRFLLFFRRFLL <br>
+                    0 3 W<br>
+                    LLFFFRFLFL<br>
+                </p>
+            </p>
+        </div>
+        <br>
+        <div style="text-align:center;">
+            <button type="button" onclick="copyEvent('copy')">Copy</button>
+            <br><br>
+            <textarea cols=40 rows=10 id="textinput"></textarea>
+            <br><br>
+            <button id="submit">Run</button>
+        </div>
+
+    </body>
+</html>
