@@ -1,15 +1,71 @@
 const http = require('http');
 const express = require('express');
+const bodyParser = require("body-parser");
+//pp.use(bodyParser.urlencoded({ extended: true }));
+
 const hostname = '127.0.0.1';
 const port = 3000;
 
-var app = express();
-var server = app.listen(3000, listening);
+//const MongoClient = require('mongodb').MongoClient;
 
-function listening(){
-  console.log("listening...");
-}
+var app = express();
 app.use(express.static("public"));
+//var server = app.listen(3000, listening);
+
+
+/*
+const { MongoClient } = require('mongodb');
+const uri = "mongodb+srv://marinatorelli:QwtqnFMK5CVjuffe@cluster0.tiell.mongodb.net/martian-robots?retryWrites=true&w=majority";
+const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+client.connect((err, client) => {
+  if (err) console.log("err");
+  else {
+    const collection = client.db("martian-robots").collection("robots-info");
+  }
+
+  // perform actions on the collection object
+ // client.close();
+  //return collection;
+});
+/*
+// connect to the db and start the express server
+let db;
+
+// Replace the URL below with the URL for your database
+const url =  'mongodb+srv://marinatorelli:1YmPoq1g6INMISBG@cluster0.tiell.mongodb.net/martian-robots';
+
+MongoClient.connect(url, (err, database) => {
+  if(err) {
+    return console.log(err);
+  }
+  db = database;
+  // start the express web server listening on 8080
+  app.listen(3000, () => {
+    console.log('listening on 3000');
+  });
+});
+
+// serve the homepage
+app.get('/', (req, res) => {
+  res.sendFile(__dirname + '/index.html');
+});
+
+*/
+function listening(){
+ console.log("listening...");
+}
+
+
+//app.post('/run', startFromInput);
+
+function startFromInput(request, response){
+  console.log(request);
+  reply = {
+    msg: "Thank you."
+  }
+  
+  response.send(reply);
+}
 // MONGO DB
 /*
 const { MongoClient } = require("mongodb");
@@ -42,7 +98,12 @@ const server = http.createServer((req, res) => {
 
 // READ THE INPUT FILE
 const fs = require('fs');
-const path = require('path');
+const { finished } = require('stream');
+const { json, request } = require('express');
+//const path = require('path');
+var data = fs.readFileSync("data.json");
+var runs = JSON.parse(data);
+//console.log(runs);
 
 var map_x = 0;
 var map_y = 0;
@@ -53,6 +114,7 @@ var num_robots = 0;
 var grid = [];
 var grid_squares = 0;
 var paths_robots = [];
+var iteration = 0; // initialize from the db getting the current iteration number
 
 // read input.txt file from the command line
 try {
@@ -70,6 +132,7 @@ function init(){
     console.error("The maximum value for any coordenate is 50");
     process.exit();
   }
+  iteration += 1;
   len = array.length;
   num_robots = (len-1)/2;
   robots = new Array(num_robots);
@@ -124,6 +187,7 @@ initialiseGrid();
         // if any robot is spawn outside of the map bounds it gives an error and the program execution finishes
         if (robots[i].init_x > array[0][0] | robots[i].init_x < 0 | robots[i].init_y > array[0][2] | robots[i].init_y < 0){
           console.error("The robots must spawn within the map grid.");
+          iteration -=1;
           process.exit();
         }
     }
@@ -137,6 +201,7 @@ initialiseGrid();
       // max number of structions allowed per robot
       if(array[i+i+2].length > 99){
         console.error("A robot can only take less than 100 instructions.");
+        iteration -=1;
         process.exit();
       }
 
@@ -275,8 +340,53 @@ initialiseGrid();
   } // end of for loop
   } // end of function movement
   movement();
+  //console.log(iteration);
+  //console.log(paths_robots);
 
-  console.log(paths_robots);
+  // add a document to the DB collection recording the click event
+  function logRobot(client, doc_robots){
+    const result = client.db("martian-robots").collection("robots-info").insertOne(doc_robots);
+    console.log(`New robot logged with the following id: ${result.insertedId}`);
+  }
+  for (var i = 0; i < num_robots; ++i){
+    const doc_robots = { 
+      "iteration": iteration ,
+      "robot_id": i,
+      "init_x": robots[i].init_x,
+      "init_y": robots[i].init_y,
+      "init_direction": robots[i].init_direction,
+      //"path": paths_robots[i],
+      // number_of_squares: paths_robots[i].length,
+      // of_those_unique:
+      "final_x": robots[i].final_x,
+      "final_y": robots[i].final_y,
+      "final_direction": robots[i].final_direction,
+      "out_of_bounds": robots[i].outOfBounds,
+      //out_of_bounds_path(or number of squares)
+      }
+
+      //logRobot(client, doc_robots);
+  }
+
+
+
+/*
+      app.post('/runproblem', (req, res) => {
+        //const click = {clickTime: new Date()};
+        console.log(doc_robots);
+        console.log(db);
+      
+        db.collection('robots-info').save(doc_robots, (err, result) => {
+          if (err) {
+            return console.log(err);
+          }
+          console.log('robot added to db');
+          res.sendStatus(201);
+        });
+      });
+  }
+*/
+
   // MONGO DB
 /*
   const doc_iteration = {
@@ -287,13 +397,13 @@ initialiseGrid();
 
   for (var i = 0; i < num_robots; ++i){
   const doc_robots = { 
-   // "iteration " : ,
+    "iteration": iteration ,
     "robot_id": i,
     "init_x": robots[i].init_x,
     "init_y": robots[i].init_y,
     "init_direction": robots[i].init_direction,
-    //"path": ,
-    // number_of_squares:
+    //"path": paths_robots[i],
+    // number_of_squares: paths_robots[i].length,
     // of_those_unique:
     "final_x": robots[i].final_x,
     "final_y": robots[i].final_y,
@@ -309,8 +419,9 @@ initialiseGrid();
     );
     */
   // print output with the correct format
+  var final_robots = "";
   function printOutput(){
-    final_robots ="";
+    //final_robots = "";
     for (var i = 0; i < num_robots; ++i){
       out_x = robots[i].curr_x;
       out_y = robots[i].curr_y;
@@ -327,6 +438,53 @@ initialiseGrid();
     console.log(final_robots)
   }
   printOutput();
+
+  // api for input and output
+  app.get("/runproblem", runProblem);
+
+  function runProblem(request, response){
+    var input_data = request.params; // this is empty
+    console.log(input_data);
+    var reply_data = JSON.stringify([input_data, final_robots]);
+    fs.writeFileSync('data.json', reply_data, finished);
+    function finshed(err){
+    console.log("all set");
+  }
+    reply = {
+      msg: "New problem starting"
+    }
+  //var reply = final_robots;
+  response.send(input_data);
+}
+
+app.get("/all", sendAll);
+
+function sendAll(request, response){
+  var data = runs;
+  response.send(data);
+}
+
+app.post("/newproblem", newProblem);
+
+function newProblem(request, response){
+  console.log(request);
+  reply = {
+    msg: "Thank you."
+  }
+  response.send(reply);
+}
+
+app.post("/link", (req,res) => {
+  res.send('You sent the name "' + req.body.name + '".');
+  console.log(req.body.textinput);
+
+  // body came with body-parser
+  // numbers is name of textarea
+});
+
+app.listen(3000, function() {
+  console.log('Server running at http://127.0.0.1:3000/');
+});
 
   /*
 // INITIALIZE THE SERVER

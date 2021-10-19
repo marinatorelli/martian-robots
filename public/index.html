@@ -1,7 +1,8 @@
 <html>
     <head>
         <link rel="stylesheet" href="index.css">
-        <script src="client.js"></script>
+
+
     </head>
     <body>
         <div class="instructions">
@@ -23,10 +24,16 @@
         <div style="text-align:center;">
             <button type="button" onclick="copyEvent('copy')">Copy</button>
             <br><br>
-            <textarea cols=40 rows=10 id="textinput"></textarea>
-            <br><br>
-            <button id="submit">Run</button>
+            <form action="/link" method="POST">
+                <textarea cols=40 rows=10 id="textinput"></textarea>
+                <br><br>
+                <button type="button" >Run</button>
+            </form>
+
         </div>
 
     </body>
+    <script src="client.js"></script>
+    <script src="app.js"></script>
+
 </html>

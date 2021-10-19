@@ -13,7 +13,16 @@
 - read input typed in on the web page
 - (maybe) set a max number of robots
 - keep in mind computational complexity (clean code, basically)
-- tests
-- api 
+-api
+
+- tests (mocha)
+npm i --save-dev chai
+
+
+
+- calculate path (almost)
+- calculate number of squares
+- count the number of iterations
+- statistics to show as api endpoints of information
 
 mongodb+srv://marinatorelli:<password>@cluster0.tiell.mongodb.net/myFirstDatabase?retryWrites=true&w=majority
