@@ -18,6 +18,8 @@
 - tests (mocha)
 npm i --save-dev chai
 
+app.get("/showproblem/:id", showProblemById);
+
 
 
 - calculate path (almost)
@@ -26,3 +28,9 @@ npm i --save-dev chai
 - statistics to show as api endpoints of information
 
 mongodb+srv://marinatorelli:<password>@cluster0.tiell.mongodb.net/myFirstDatabase?retryWrites=true&w=majority
+
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js"> </script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-auth-compat.js"></script>
+        "firebase": "^9.1.3",

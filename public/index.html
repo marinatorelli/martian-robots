@@ -24,16 +24,16 @@
         <div style="text-align:center;">
             <button type="button" onclick="copyEvent('copy')">Copy</button>
             <br><br>
-            <form action="/link" method="POST">
+            <form>
                 <textarea cols=40 rows=10 id="textinput"></textarea>
                 <br><br>
-                <button type="button" >Run</button>
+                <button type="button" onclick="postInput('textinput')" >Run</button>
             </form>
 
         </div>
 
     </body>
+
     <script src="client.js"></script>
-    <script src="app.js"></script>
 
 </html>

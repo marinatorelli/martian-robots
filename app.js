@@ -1,7 +1,10 @@
-const http = require('http');
-const express = require('express');
-const bodyParser = require("body-parser");
+//const http = require('http');
+//const express = require('express');
+//const bodyParser = require("body-parser");
 //pp.use(bodyParser.urlencoded({ extended: true }));
+import express from 'express';
+//import { initializeApp } from 'firebase/app';
+//import { getDatabase, ref, set} from "firebase/database";
 
 const hostname = '127.0.0.1';
 const port = 3000;
@@ -10,8 +13,74 @@ const port = 3000;
 
 var app = express();
 app.use(express.static("public"));
-//var server = app.listen(3000, listening);
+app.use(express.json());
+/*
+//const firebase } = require('firebase/app');
+var config = {
+  apiKey: "AIzaSyBjH5Xa9XwJq9UiW2ilKLUFxdHR39UKhMU",
+  authDomain: "martian-robots-262d1.firebaseapp.com",
+  // For databases not in the us-central1 location, databaseURL will be of the
+  // form https://[databaseName].[region].firebasedatabase.app.
+  // For example, https://your-database-123.europe-west1.firebasedatabase.app
+  databaseURL: "https://martian-robots-262d1-default-rtdb.europe-west1.firebasedatabase.app/",
+  storageBucket: "martian-robots-262d1.appspot.com"
+  };
 
+//const aux = initializeApp(config);
+const firebaseApp = initializeApp(config);
+const db = getDatabase(firebaseApp);
+//const auth = firebaseApp.auth();
+
+function storeIteration() {
+  //const db = getDatabase(aux);
+  set(ref(db, 'problems/' + iter), problem_iter);
+}
+*/
+// Get a reference to the database service
+//const db = getDatabase(aux);
+
+//var reference = db.ref('problems');
+//reference.push(problem_iter);
+/*
+const firebaseConfig = {
+  apiKey: "AIzaSyBjH5Xa9XwJq9UiW2ilKLUFxdHR39UKhMU",
+  authDomain: "martian-robots-262d1.firebaseapp.com",
+  projectId: "martian-robots-262d1",
+  storageBucket: "martian-robots-262d1.appspot.com",
+  messagingSenderId: "145320875661",
+  appId: "1:145320875661:web:85e3e323f7386dde9934c4"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+
+var database = firebase.database();
+console.log(database);
+
+var ref = database.ref('problems');
+ref.push(problem_iter);
+//var server = app.listen(3000, listening);
+*/
+// GET INPUT FROM THE CLIENT
+var inputt = "";
+app.post('/api', (request, response) => {
+  //console.log(request.body);
+  const input_data = request.body;
+
+  inputt = input_data.input;
+  //console.log(inputt);
+  main();
+  response.json({
+    status: 'success'
+  });
+
+  //init();
+  //return inputt;
+  //console.log(input_data.input);
+  //console.log(input);
+});
+//inputt = input_data.input
+//console.log(inputt)
 
 /*
 const { MongoClient } = require('mongodb');
@@ -57,7 +126,7 @@ function listening(){
 
 
 //app.post('/run', startFromInput);
-
+/*
 function startFromInput(request, response){
   console.log(request);
   reply = {
@@ -65,7 +134,7 @@ function startFromInput(request, response){
   }
   
   response.send(reply);
-}
+}*/
 // MONGO DB
 /*
 const { MongoClient } = require("mongodb");
@@ -97,12 +166,13 @@ const server = http.createServer((req, res) => {
 */
 
 // READ THE INPUT FILE
-const fs = require('fs');
-const { finished } = require('stream');
-const { json, request } = require('express');
+//const fs = require('fs');
+//const { finished } = require('stream');
+//const { json, request } = require('express');
+//const { ppid, mainModule } = require('process');
 //const path = require('path');
-var data = fs.readFileSync("data.json");
-var runs = JSON.parse(data);
+//var data = fs.readFileSync("data.json");
+//var runs = JSON.parse(data);
 //console.log(runs);
 
 var map_x = 0;
@@ -115,17 +185,45 @@ var grid = [];
 var grid_squares = 0;
 var paths_robots = [];
 var iteration = 0; // initialize from the db getting the current iteration number
-
+var final_robots = "";
+var problem_iter = "";
+//const data = inputt;
+//array = data.split("\n");
+//console.log(data);
+/*
 // read input.txt file from the command line
 try {
   const data = fs.readFileSync('input.txt', 'utf8')
+  //data = inputt;
+  console.log(data);
   array = data.split("\n");
 } catch (err) {
   console.error(err)
 }
+*/
+function main(){
+  init();
+  initialiseGrid();
+  createRobots();
+  initialiseRobots();
+  movement();
+  printOutput();
+  storeIteration();
+}
+
+function storeIteration(){
+  problem_iter = {
+    input: inputt,
+    output: final_robots
+  } 
+  console.log(problem_iter);
+}
 
 //initialize the problem and get all the initial data from the input file
 function init(){
+  const data = inputt;
+  array = data.split("\n");
+  console.log(data);
   map_x = parseInt(array[0][0]);
   map_y = parseInt(array[0][2]);
   if (map_x > 50 && map_y > 50){
@@ -137,8 +235,9 @@ function init(){
   num_robots = (len-1)/2;
   robots = new Array(num_robots);
   paths_robots = new Array(num_robots);
+  console.log("initializing problem");
 }
-init();
+//init();
 
 // create and initialise map grid
 function initialiseGrid(){
@@ -154,7 +253,7 @@ function initialiseGrid(){
   }
   grid_squares = (map_x+1)*(map_y+1);
 }
-initialiseGrid();
+//initialiseGrid();
 
 
 // create Robot object
@@ -168,10 +267,10 @@ initialiseGrid();
   // create array of the given number of robots
   function createRobots() {
     for (var i = 0; i < num_robots; ++i) {
-      robots[i] = new Robot()
+      robots[i] = new Robot();
     }
   }
-  createRobots();
+  //createRobots();
 
   // fill in the robots array with the initial positions and directions
   function initialiseRobots(){
@@ -192,7 +291,7 @@ initialiseGrid();
         }
     }
   }
-  initialiseRobots();
+  //initialiseRobots();
 
 // control of the movement of robots given by the instructions line
   function movement(){
@@ -206,6 +305,9 @@ initialiseGrid();
       }
 
     Array.from(array[i+i+2]).forEach(element => {
+      var new_x = "";
+      var new_y = "";
+      var new_direction = "";
       // the robot stays on the same grid point and turns 90 degrees to the left
       if (element == "L"){
         switch (robots[i].curr_direction) {
@@ -339,15 +441,16 @@ initialiseGrid();
     paths_robots[i].unshift([robots[i].init_x, robots[i].init_y, robots[i].init_direction]);
   } // end of for loop
   } // end of function movement
-  movement();
+ // movement();
   //console.log(iteration);
   //console.log(paths_robots);
 
   // add a document to the DB collection recording the click event
-  function logRobot(client, doc_robots){
+ /* function logRobot(client, doc_robots){
     const result = client.db("martian-robots").collection("robots-info").insertOne(doc_robots);
     console.log(`New robot logged with the following id: ${result.insertedId}`);
   }
+  
   for (var i = 0; i < num_robots; ++i){
     const doc_robots = { 
       "iteration": iteration ,
@@ -367,6 +470,8 @@ initialiseGrid();
 
       //logRobot(client, doc_robots);
   }
+  */
+
 
 
 
@@ -419,44 +524,47 @@ initialiseGrid();
     );
     */
   // print output with the correct format
-  var final_robots = "";
   function printOutput(){
-    //final_robots = "";
+    final_robots = "";
     for (var i = 0; i < num_robots; ++i){
-      out_x = robots[i].curr_x;
-      out_y = robots[i].curr_y;
-      out_direction = robots[i].curr_direction;
+      var out_x = robots[i].curr_x;
+      var out_y = robots[i].curr_y;
+      var out_direction = robots[i].curr_direction;
       if(robots[i].outOfBounds == true){
-        out_bounds = "LOST";
+        var out_bounds = "LOST";
       }
       else{
-        out_bounds = "";
+        var out_bounds = "";
       }
-      out_robot = out_x + " " + out_y + " " + out_direction + " " + out_bounds + "\n";
+      var out_robot = out_x + " " + out_y + " " + out_direction + " " + out_bounds + "\n";
       final_robots += out_robot;
     }
-    console.log(final_robots)
+    console.log(final_robots);
   }
-  printOutput();
+ // printOutput();
 
   // api for input and output
-  app.get("/runproblem", runProblem);
+  //app.get("/runproblem", runProblem);
 
-  function runProblem(request, response){
-    var input_data = request.params; // this is empty
-    console.log(input_data);
-    var reply_data = JSON.stringify([input_data, final_robots]);
-    fs.writeFileSync('data.json', reply_data, finished);
-    function finshed(err){
-    console.log("all set");
-  }
-    reply = {
-      msg: "New problem starting"
-    }
-  //var reply = final_robots;
-  response.send(input_data);
+
+/*
+function runProblem(request, response){
+  var input_data = request.params; // this is empty
+  console.log(input_data);
+  var reply_data = JSON.stringify([input_data, final_robots]);
+  fs.writeFileSync('data.json', reply_data, finished);
+  function finshed(err){
+  console.log("all set");
 }
+  reply = {
+    msg: "New problem starting"
+  }
+//var reply = final_robots;
+//response.send(input_data);
+}
+*/
 
+/*
 app.get("/all", sendAll);
 
 function sendAll(request, response){
@@ -481,7 +589,7 @@ app.post("/link", (req,res) => {
   // body came with body-parser
   // numbers is name of textarea
 });
-
+*/
 app.listen(3000, function() {
   console.log('Server running at http://127.0.0.1:3000/');
 });

@@ -1,6 +1,6 @@
 
 const { MongoClient } = require('mongodb');
-const uri = "mongodb+srv://marinatorelli:QwtqnFMK5CVjuffe@cluster0.tiell.mongodb.net/martian-robots?retryWrites=true&w=majority";
+const uri = "mongodb+srv://marinatorelli:QwtqnFMK5CVjuffe@cluster0.tiell.mongodb.net"; //martian-robots?retryWrites=true&w=majority";
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 client.connect(err => {
   const collection = client.db("martian-robots").collection("robots-info");

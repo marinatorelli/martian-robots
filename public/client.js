@@ -26,8 +26,29 @@ function copyEvent(id)
 {
     var str = document.getElementById(id);
     window.getSelection().selectAllChildren(str);
-    document.execCommand("Copy")
+    document.execCommand("Copy");
 }
+//const button = document.getElementById('submit');
+//button.addEventListener('submit', postInput);
+
+function postInput(id){
+    const input_data = {
+        input: document.getElementById(id).value
+    } 
+    console.log(input_data);
+    const options = {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(input_data)
+    }
+    console.log(input_data);
+fetch('/api', options).then(response =>{
+    console.log(response);
+    });
+}
+
 
 /*
 function submitSimulation(){
@@ -47,7 +68,7 @@ function postErr(err){
     console.log(err);
 }
 
-*/
+s
 function setup(){
     loadJSON("/all", gotData);
     console.log("running");
