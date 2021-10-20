@@ -27,6 +27,10 @@ app.get("/showproblem/:id", showProblemById);
 - count the number of iterations
 - statistics to show as api endpoints of information
 
+- number of lost robots as percentage (average of diff expeditions)
+- percentage of explored surface per exploration (average of diff expeditions)
+
+
 mongodb+srv://marinatorelli:<password>@cluster0.tiell.mongodb.net/myFirstDatabase?retryWrites=true&w=majority
 
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js"> </script>
@@ -34,3 +38,4 @@ mongodb+srv://marinatorelli:<password>@cluster0.tiell.mongodb.net/myFirstDatabas
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-auth-compat.js"></script>
         "firebase": "^9.1.3",
+

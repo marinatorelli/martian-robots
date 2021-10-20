@@ -1,8 +1,9 @@
 //const http = require('http');
-//const express = require('express');
-//const bodyParser = require("body-parser");
-//pp.use(bodyParser.urlencoded({ extended: true }));
-import express from 'express';
+const express = require('express');
+const Datastore = require('nedb');
+const bodyParser = require("body-parser");
+//app.use(bodyParser.urlencoded({ extended: true }));
+//import express from 'express';
 //import { initializeApp } from 'firebase/app';
 //import { getDatabase, ref, set} from "firebase/database";
 
@@ -14,6 +15,10 @@ const port = 3000;
 var app = express();
 app.use(express.static("public"));
 app.use(express.json());
+
+const database = new Datastore("database.db");
+database.loadDatabase();
+//database.insert(problem_iter);
 /*
 //const firebase } = require('firebase/app');
 var config = {
@@ -61,24 +66,8 @@ var ref = database.ref('problems');
 ref.push(problem_iter);
 //var server = app.listen(3000, listening);
 */
-// GET INPUT FROM THE CLIENT
-var inputt = "";
-app.post('/api', (request, response) => {
-  //console.log(request.body);
-  const input_data = request.body;
 
-  inputt = input_data.input;
-  //console.log(inputt);
-  main();
-  response.json({
-    status: 'success'
-  });
 
-  //init();
-  //return inputt;
-  //console.log(input_data.input);
-  //console.log(input);
-});
 //inputt = input_data.input
 //console.log(inputt)
 
@@ -182,11 +171,42 @@ var robots = [];
 var len = 0;
 var num_robots = 0;
 var grid = [];
-var grid_squares = 0;
+var explored_surface = 0;
 var paths_robots = [];
 var iteration = 0; // initialize from the db getting the current iteration number
 var final_robots = "";
-var problem_iter = "";
+var expedition = "";
+var number_actions_per_robot = [];
+var num_lost_robots = 0;
+var explored_surface_by_robot = [];
+var explored_surface_by_robot_unique = [];
+var explored_surface_total = 0;
+var explored_surface_total_unique = 0;
+
+// GET INPUT FROM THE CLIENT
+var inputt = "";
+app.post('/api', (request, response) => {
+  //console.log(request.body);
+  const input_data = request.body;
+
+  inputt = input_data.input;
+  //console.log(inputt);
+  main();
+  response.json({
+    status: 'success'
+  });
+});
+
+// GET ALL THE STORED INFO TO THE CLIENT
+app.get('/all', (request, response) => {
+  database.find({}, (err, data) => {
+    if(err) {
+      response.end();
+      return;
+    }
+    response.json(data);
+  });
+});
 //const data = inputt;
 //array = data.split("\n");
 //console.log(data);
@@ -208,15 +228,23 @@ function main(){
   initialiseRobots();
   movement();
   printOutput();
+  calcExploration();
   storeIteration();
 }
 
 function storeIteration(){
-  problem_iter = {
+  expedition = {
     input: inputt,
-    output: final_robots
+    output: final_robots,
+    number_of_robots : num_robots,
+    number_of_lost_robots: num_lost_robots,
+    paths_of_robots: paths_robots,
+    number_of_actions_per_robot: number_actions_per_robot,
+    explored_surface_by_robot: explored_surface_by_robot_unique,
+    explored_surface_total: explored_surface_total_unique
   } 
-  console.log(problem_iter);
+  database.insert(expedition);
+  console.log(expedition);
 }
 
 //initialize the problem and get all the initial data from the input file
@@ -235,6 +263,9 @@ function init(){
   num_robots = (len-1)/2;
   robots = new Array(num_robots);
   paths_robots = new Array(num_robots);
+  number_actions_per_robot = new Array(num_robots);
+  explored_surface_by_robot = new Array(num_robots);
+  explored_surface_by_robot_unique = new Array(num_robots);
   console.log("initializing problem");
 }
 //init();
@@ -297,6 +328,7 @@ function initialiseGrid(){
   function movement(){
     for (var i = 0; i < num_robots; ++i){
       paths_robots[i] = [];
+      number_actions_per_robot[i] = 0;
       // max number of structions allowed per robot
       if(array[i+i+2].length > 99){
         console.error("A robot can only take less than 100 instructions.");
@@ -305,6 +337,9 @@ function initialiseGrid(){
       }
 
     Array.from(array[i+i+2]).forEach(element => {
+      current_position = [];
+      //paths_robots[i] = new Array(array[i+i+2].length);
+      number_actions_per_robot[i] +=1;
       var new_x = "";
       var new_y = "";
       var new_direction = "";
@@ -362,6 +397,7 @@ function initialiseGrid(){
                       robots[i].final_x = robots[i].curr_x;
                       robots[i].final_y = robots[i].curr_y;
                       robots[i].final_direction = robots[i].curr_direction;
+                      num_lost_robots += 1;
                     }
                     else{
                       break;
@@ -383,6 +419,7 @@ function initialiseGrid(){
                       robots[i].final_x = robots[i].curr_x;
                       robots[i].final_y = robots[i].curr_y;
                       robots[i].final_direction = robots[i].curr_direction;
+                      num_lost_robots += 1;
                     }
                     else{
                       break;
@@ -404,6 +441,7 @@ function initialiseGrid(){
                       robots[i].final_x = robots[i].curr_x;
                       robots[i].final_y = robots[i].curr_y;
                       robots[i].final_direction = robots[i].curr_direction;
+                      num_lost_robots += 1;
                     }
                     else{
                       break;
@@ -425,6 +463,7 @@ function initialiseGrid(){
                       robots[i].final_x = robots[i].curr_x;
                       robots[i].final_y = robots[i].curr_y;
                       robots[i].final_direction = robots[i].curr_direction;
+                      num_lost_robots += 1;
                     }
                     else{
                       break;
@@ -439,8 +478,27 @@ function initialiseGrid(){
       }
     }); // end of forEach()
     paths_robots[i].unshift([robots[i].init_x, robots[i].init_y, robots[i].init_direction]);
+    console.log(paths_robots[i].length);
   } // end of for loop
   } // end of function movement
+
+  function calcExploration(){
+    for (var i = 0; i < num_robots; ++i){
+      len_instr = paths_robots[i].length;
+      explored_surface_by_robot[i] = len_instr;
+      explored_surface_by_robot_unique[i] = explored_surface_by_robot[i];
+      for (var ii = 0; ii < len_instr; ++ii){
+        for (var iii = 1; iii < len_instr ; ++iii){
+          if(paths_robots[i][ii][0] == paths_robots[i][iii][0] && paths_robots[i][ii][1] == paths_robots[i][ii][1]) {
+            explored_surface_by_robot_unique[i] -=1;
+          }
+      }
+    }
+    }
+    explored_surface_total += explored_surface_by_robot;
+    explored_surface_total_unique += explored_surface_by_robot_unique; 
+  }
+  
  // movement();
   //console.log(iteration);
   //console.log(paths_robots);
