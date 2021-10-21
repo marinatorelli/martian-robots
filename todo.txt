@@ -29,7 +29,7 @@ app.get("/showproblem/:id", showProblemById);
 
 - number of lost robots as percentage (average of diff expeditions)
 - percentage of explored surface per exploration (average of diff expeditions)
-
+- number of actions vs splored surface
 
 mongodb+srv://marinatorelli:<password>@cluster0.tiell.mongodb.net/myFirstDatabase?retryWrites=true&w=majority
 

@@ -68,13 +68,10 @@ async function getData() {
         output.textContent = `output: ${item.output}`;
 
         root.append(input, output);
-        document.body.append(root);
-
-
-
+        document.getElementById("previousExpeditions").append(root);
 
     }
-    console.log(data);
+    //console.log(data);
 }
 
 window.onhashchange = function(){
@@ -103,7 +100,7 @@ function render(hashKey){
     switch(hashKey){
         case "":
             pages[0].style.display = "block";
-            document.getElementById("li_home").classList.add("active");
+            document.getElementById("li_new").classList.add("active");
             break;
         case "#new":
             pages[0].style.display = "block";
@@ -116,6 +113,10 @@ function render(hashKey){
         case "#insights":
             pages[2].style.display = "block";
             document.getElementById("li_insights").classList.add("active");
+            break;
+        default:
+            pages[0].style.display = "block";
+            document.getElementById("li_new").classList.add("active");
             break;
     }
 }

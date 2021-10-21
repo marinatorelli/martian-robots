@@ -167,11 +167,12 @@ const server = http.createServer((req, res) => {
 var map_x = 0;
 var map_y = 0;
 var array = [];
+var array_info = [];
 var robots = [];
 var len = 0;
 var num_robots = 0;
 var grid = [];
-var explored_surface = 0;
+var explored_surface_total = 0;
 var paths_robots = [];
 var iteration = 0; // initialize from the db getting the current iteration number
 var final_robots = "";
@@ -180,7 +181,6 @@ var number_actions_per_robot = [];
 var num_lost_robots = 0;
 var explored_surface_by_robot = [];
 var explored_surface_by_robot_unique = [];
-var explored_surface_total = 0;
 var explored_surface_total_unique = 0;
 
 // GET INPUT FROM THE CLIENT
@@ -222,6 +222,8 @@ try {
 }
 */
 function main(){
+  map_x = 0;
+  map_y = 0;
   init();
   initialiseGrid();
   createRobots();
@@ -240,8 +242,8 @@ function storeIteration(){
     number_of_lost_robots: num_lost_robots,
     paths_of_robots: paths_robots,
     number_of_actions_per_robot: number_actions_per_robot,
-    explored_surface_by_robot: explored_surface_by_robot_unique,
-    explored_surface_total: explored_surface_total_unique
+    explored_surface_by_robot: explored_surface_by_robot,
+    explored_surface_total: explored_surface_total
   } 
   database.insert(expedition);
   console.log(expedition);
@@ -251,9 +253,16 @@ function storeIteration(){
 function init(){
   const data = inputt;
   array = data.split("\n");
+  for (i=0; i < array.length; i++){
+    array_info[i] = array[i].split(" ");
+    //console.log(array_info[i][1]);
+  }
   console.log(data);
-  map_x = parseInt(array[0][0]);
-  map_y = parseInt(array[0][2]);
+  map_x = parseInt(array_info[0][0]);
+  map_y = parseInt(array_info[0][1]);
+  //map_x = parseInt(array[0][0]);
+  //map_y = parseInt(array[0][1]);
+  //console.log(map_y);
   if (map_x > 50 && map_y > 50){
     console.error("The maximum value for any coordenate is 50");
     process.exit();
@@ -279,9 +288,13 @@ function initialiseGrid(){
 
   for (var i=0; i < map_y+1; ++i){
     for(var ii=0; ii < map_x+1; ++ii){
-      grid[i][ii] = -1;
+      grid[i][ii] = new Array(num_robots+1);
+      for (var iii=0; iii < (num_robots+1); ++iii){
+        grid[i][ii][iii] = -1;
+      }
     }
   }
+  //console.log(grid);
   grid_squares = (map_x+1)*(map_y+1);
 }
 //initialiseGrid();
@@ -306,16 +319,17 @@ function initialiseGrid(){
   // fill in the robots array with the initial positions and directions
   function initialiseRobots(){
     for (var i = 0; i < num_robots; ++i) {
-        robots[i].init_x = parseInt(array[i+i+1][0]);
-        robots[i].init_y = parseInt(array[i+i+1][2]);
-        robots[i].init_direction = array[i+i+1][4];
+        robots[i].init_x = parseInt(array_info[i+i+1][0]);
+        robots[i].init_y = parseInt(array_info[i+i+1][1]);
+        robots[i].init_direction = array_info[i+i+1][2];
 
         robots[i].curr_x = robots[i].init_x;
         robots[i].curr_y = robots[i].init_y;
         robots[i].curr_direction = robots[i].init_direction;
 
+        grid[robots[i].init_y][robots[i].init_x][i+1] = i;
         // if any robot is spawn outside of the map bounds it gives an error and the program execution finishes
-        if (robots[i].init_x > array[0][0] | robots[i].init_x < 0 | robots[i].init_y > array[0][2] | robots[i].init_y < 0){
+        if (robots[i].init_x > map_x | robots[i].init_x < 0 | robots[i].init_y > map_y | robots[i].init_y < 0){
           console.error("The robots must spawn within the map grid.");
           iteration -=1;
           process.exit();
@@ -343,139 +357,151 @@ function initialiseGrid(){
       var new_x = "";
       var new_y = "";
       var new_direction = "";
-      // the robot stays on the same grid point and turns 90 degrees to the left
-      if (element == "L"){
-        switch (robots[i].curr_direction) {
-            case "N":
-                new_direction = "W";
+
+      if(robots[i].outOfBounds == false){
+// the robot stays on the same grid point and turns 90 degrees to the left
+if (element == "L"){
+  switch (robots[i].curr_direction) {
+      case "N":
+          new_direction = "W";
+          break;
+      case "E":
+          new_direction = "N";
+          break;
+      case "S":
+          new_direction = "E";
+          break;
+      case "W":
+          new_direction = "S";
+         break;
+      }
+  robots[i].curr_direction = new_direction;
+  paths_robots[i].push([robots[i].curr_x, robots[i].curr_y, robots[i].curr_direction]);
+}
+
+// the robot stays on the same grid point and turns 90 degrees to the right
+if (element == "R"){
+    switch (robots[i].curr_direction) {
+        case "N":
+            new_direction = "E";
+            break;
+        case "E":
+            new_direction = "S";
+            break;
+        case "S":
+            new_direction = "W";
+            break;
+        case "W":
+            new_direction = "N";
+          break;
+        }
+    robots[i].curr_direction = new_direction;
+    paths_robots[i].push([robots[i].curr_x, robots[i].curr_y, robots[i].curr_direction]);
+}
+
+// the robot moves forward one grid point in the current direction and maintains the same orientation
+if (element == "F"){
+    switch (robots[i].curr_direction) {
+        case "N":
+            new_x = robots[i].curr_x;
+            new_y = robots[i].curr_y +1;
+            new_direction = "N";
+            if (new_x > map_x | new_y > map_y | new_x < 0 | new_y < 0){
+              if(grid[robots[i].curr_y][robots[i].curr_x][0] == -1){
+                grid[robots[i].curr_y][robots[i].curr_x][0] = i;
+                robots[i].outOfBounds = true;
+                //robots[i].final_x = robots[i].curr_x;
+                //robots[i].final_y = robots[i].curr_y;
+                //robots[i].final_direction = robots[i].curr_direction;
+                num_lost_robots += 1;
                 break;
-            case "E":
-                new_direction = "N";
+              }
+              else{
                 break;
-            case "S":
-                new_direction = "E";
-                break;
-            case "W":
-                new_direction = "S";
-               break;
+              }
             }
-        robots[i].curr_direction = new_direction;
-        paths_robots[i].push([robots[i].curr_x, robots[i].curr_y, robots[i].curr_direction]);
-      }
-  
-      // the robot stays on the same grid point and turns 90 degrees to the right
-      if (element == "R"){
-          switch (robots[i].curr_direction) {
-              case "N":
-                  new_direction = "E";
-                  break;
-              case "E":
-                  new_direction = "S";
-                  break;
-              case "S":
-                  new_direction = "W";
-                  break;
-              case "W":
-                  new_direction = "N";
+            robots[i].curr_x = new_x;
+            robots[i].curr_y = new_y;
+            robots[i].curr_direction = new_direction;
+            grid[robots[i].curr_y][robots[i].curr_x][i+1] = i;
+            paths_robots[i].push([robots[i].curr_x, robots[i].curr_y, robots[i].curr_direction]);
+            break;
+        case "E":
+            new_x = robots[i].curr_x+1;
+            new_y = robots[i].curr_y;
+            new_direction = "E";
+            if (new_x > map_x | new_y > map_y | new_x < 0 | new_y < 0){
+              if(grid[robots[i].curr_y][robots[i].curr_x][0] == -1){
+                grid[robots[i].curr_y][robots[i].curr_x][0] = i;
+                robots[i].outOfBounds = true;
+                robots[i].final_x = robots[i].curr_x;
+                robots[i].final_y = robots[i].curr_y;
+                robots[i].final_direction = robots[i].curr_direction;
+                num_lost_robots += 1;
                 break;
               }
-          robots[i].curr_direction = new_direction;
-          paths_robots[i].push([robots[i].curr_x, robots[i].curr_y, robots[i].curr_direction]);
-      }
-  
-      // the robot moves forward one grid point in the current direction and maintains the same orientation
-      if (element == "F"){
-          switch (robots[i].curr_direction) {
-              case "N":
-                  new_x = robots[i].curr_x;
-                  new_y = robots[i].curr_y +1;
-                  new_direction = "N";
-                  if (new_x > map_x | new_y > map_y | new_x < 0 | new_y < 0){
-                    if(grid[robots[i].curr_x][robots[i].curr_y] == -1){
-                      grid[robots[i].curr_x][robots[i].curr_y] = i;
-                      robots[i].outOfBounds = true;
-                      robots[i].final_x = robots[i].curr_x;
-                      robots[i].final_y = robots[i].curr_y;
-                      robots[i].final_direction = robots[i].curr_direction;
-                      num_lost_robots += 1;
-                    }
-                    else{
-                      break;
-                    }
-                  }
-                  robots[i].curr_x = new_x;
-                  robots[i].curr_y = new_y;
-                  robots[i].curr_direction = new_direction;
-                  paths_robots[i].push([robots[i].curr_x, robots[i].curr_y, robots[i].curr_direction]);
-                  break;
-              case "E":
-                  new_x = robots[i].curr_x+1;
-                  new_y = robots[i].curr_y;
-                  new_direction = "E";
-                  if (new_x > map_x | new_y > map_y | new_x < 0 | new_y < 0){
-                    if(grid[robots[i].curr_x][robots[i].curr_y] == -1){
-                      grid[robots[i].curr_x][robots[i].curr_y] = i;
-                      robots[i].outOfBounds = true;
-                      robots[i].final_x = robots[i].curr_x;
-                      robots[i].final_y = robots[i].curr_y;
-                      robots[i].final_direction = robots[i].curr_direction;
-                      num_lost_robots += 1;
-                    }
-                    else{
-                      break;
-                    }
-                  }
-                  robots[i].curr_x = new_x;
-                  robots[i].curr_y = new_y;
-                  robots[i].curr_direction = new_direction;
-                  paths_robots[i].push([robots[i].curr_x, robots[i].curr_y, robots[i].curr_direction]);
-                  break;
-              case "S":
-                  new_x = robots[i].curr_x;
-                  new_y = robots[i].curr_y-1;
-                  new_direction = "S";
-                  if (new_x > map_x | new_y > map_y | new_x < 0 | new_y < 0){
-                    if(grid[robots[i].curr_x][robots[i].curr_y] == -1){
-                      grid[robots[i].curr_x][robots[i].curr_y] = i;
-                      robots[i].outOfBounds = true;
-                      robots[i].final_x = robots[i].curr_x;
-                      robots[i].final_y = robots[i].curr_y;
-                      robots[i].final_direction = robots[i].curr_direction;
-                      num_lost_robots += 1;
-                    }
-                    else{
-                      break;
-                    }
-                  }
-                  robots[i].curr_x = new_x;
-                  robots[i].curr_y = new_y;
-                  robots[i].curr_direction = new_direction;
-                  paths_robots[i].push([robots[i].curr_x, robots[i].curr_y, robots[i].curr_direction]);
-                  break;
-              case "W":
-                  new_x = robots[i].curr_x-1;
-                  new_y = robots[i].curr_y;
-                  new_direction = "W";
-                  if (new_x > map_x | new_y > map_y | new_x < 0 | new_y < 0){
-                    if(grid[robots[i].curr_x][robots[i].curr_y] == -1){
-                      grid[robots[i].curr_x][robots[i].curr_y] = i;
-                      robots[i].outOfBounds = true;
-                      robots[i].final_x = robots[i].curr_x;
-                      robots[i].final_y = robots[i].curr_y;
-                      robots[i].final_direction = robots[i].curr_direction;
-                      num_lost_robots += 1;
-                    }
-                    else{
-                      break;
-                    }
-                  }
-                  robots[i].curr_x = new_x;
-                  robots[i].curr_y = new_y;
-                  robots[i].curr_direction = new_direction;
-                  paths_robots[i].push([robots[i].curr_x, robots[i].curr_y, robots[i].curr_direction]);
+              else{
                 break;
               }
-      }
+            }
+            robots[i].curr_x = new_x;
+            robots[i].curr_y = new_y;
+            robots[i].curr_direction = new_direction;
+            grid[robots[i].curr_y][robots[i].curr_x][i+1] = i;
+            paths_robots[i].push([robots[i].curr_x, robots[i].curr_y, robots[i].curr_direction]);
+            break;
+        case "S":
+            new_x = robots[i].curr_x;
+            new_y = robots[i].curr_y-1;
+            new_direction = "S";
+            if (new_x > map_x | new_y > map_y | new_x < 0 | new_y < 0){
+              if(grid[robots[i].curr_y][robots[i].curr_x][0] == -1){
+                grid[robots[i].curr_y][robots[i].curr_x][0] = i;
+                robots[i].outOfBounds = true;
+                robots[i].final_x = robots[i].curr_x;
+                robots[i].final_y = robots[i].curr_y;
+                robots[i].final_direction = robots[i].curr_direction;
+                num_lost_robots += 1;
+                break;
+              }
+              else{
+                break;
+              }
+            }
+            robots[i].curr_x = new_x;
+            robots[i].curr_y = new_y;
+            robots[i].curr_direction = new_direction;
+            grid[robots[i].curr_y][robots[i].curr_x][i+1] = i;
+            paths_robots[i].push([robots[i].curr_x, robots[i].curr_y, robots[i].curr_direction]);
+            break;
+        case "W":
+            new_x = robots[i].curr_x-1;
+            new_y = robots[i].curr_y;
+            new_direction = "W";
+            if (new_x > map_x | new_y > map_y | new_x < 0 | new_y < 0){
+              if(grid[robots[i].curr_y][robots[i].curr_x][0] == -1){
+                grid[robots[i].curr_y][robots[i].curr_x][0] = i;
+                robots[i].outOfBounds = true;
+                robots[i].final_x = robots[i].curr_x;
+                robots[i].final_y = robots[i].curr_y;
+                robots[i].final_direction = robots[i].curr_direction;
+                num_lost_robots += 1;
+                break;
+              }
+              else{
+                break;
+              }
+            }
+            robots[i].curr_x = new_x;
+            robots[i].curr_y = new_y;
+            robots[i].curr_direction = new_direction;
+            grid[robots[i].curr_y][robots[i].curr_x][i+1] = i;
+            paths_robots[i].push([robots[i].curr_x, robots[i].curr_y, robots[i].curr_direction]);
+          break;
+        }
+    } // end if "F"
+      } // end if robot out of bounds is false
+      
     }); // end of forEach()
     paths_robots[i].unshift([robots[i].init_x, robots[i].init_y, robots[i].init_direction]);
     console.log(paths_robots[i].length);
@@ -483,20 +509,8 @@ function initialiseGrid(){
   } // end of function movement
 
   function calcExploration(){
-    for (var i = 0; i < num_robots; ++i){
-      len_instr = paths_robots[i].length;
-      explored_surface_by_robot[i] = len_instr;
-      explored_surface_by_robot_unique[i] = explored_surface_by_robot[i];
-      for (var ii = 0; ii < len_instr; ++ii){
-        for (var iii = 1; iii < len_instr ; ++iii){
-          if(paths_robots[i][ii][0] == paths_robots[i][iii][0] && paths_robots[i][ii][1] == paths_robots[i][ii][1]) {
-            explored_surface_by_robot_unique[i] -=1;
-          }
-      }
-    }
-    }
-    explored_surface_total += explored_surface_by_robot;
-    explored_surface_total_unique += explored_surface_by_robot_unique; 
+    explored_surface_by_robot;
+    explored_surface_total;
   }
   
  // movement();
