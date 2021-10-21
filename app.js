@@ -2,13 +2,19 @@
 const express = require('express');
 const Datastore = require('nedb');
 const bodyParser = require("body-parser");
+const { response } = require('express');
+//const popup = require('node-popup');
+//import {alert} from 'node-popup';
+
+//let alert = require('alert'); 
+
 //app.use(bodyParser.urlencoded({ extended: true }));
 //import express from 'express';
 //import { initializeApp } from 'firebase/app';
 //import { getDatabase, ref, set} from "firebase/database";
 
 const hostname = '127.0.0.1';
-const port = 3000;
+const port = 8000;
 
 //const MongoClient = require('mongodb').MongoClient;
 
@@ -16,6 +22,12 @@ var app = express();
 app.use(express.static("public"));
 app.use(express.json());
 
+//module.exports = app.listen(3000);
+if(!module.parent){
+  app.listen(port, () =>
+    console.log(`Example app listening on port ${port}!`),
+  );
+}
 const database = new Datastore("database.db");
 database.loadDatabase();
 //database.insert(problem_iter);
@@ -164,6 +176,7 @@ const server = http.createServer((req, res) => {
 //var runs = JSON.parse(data);
 //console.log(runs);
 
+
 var map_x = 0;
 var map_y = 0;
 var array = [];
@@ -180,21 +193,47 @@ var expedition = "";
 var number_actions_per_robot = [];
 var num_lost_robots = 0;
 var explored_surface_by_robot = [];
-var explored_surface_by_robot_unique = [];
-var explored_surface_total_unique = 0;
+var grid_squares = 0;
 
+//var explored_surface_by_robot_unique = [];
+//var explored_surface_total_unique = 0;
+
+var errorType = -1;
+var errorMesage = "";
+var errorObject = []
+
+/*****************************************************************************************************/
+/*****************************************************************************************************/
+/***********************************************API***************************************************/
+/*****************************************************************************************************/
+/*****************************************************************************************************/
 // GET INPUT FROM THE CLIENT
 var inputt = "";
+var timestamp = "";
+
 app.post('/api', (request, response) => {
   //console.log(request.body);
   const input_data = request.body;
-
+  timestamp = Date.now();
   inputt = input_data.input;
+  console.log(timestamp);
   //console.log(inputt);
-  main();
-  response.json({
-    status: 'success'
-  });
+  map_x = 0;
+  map_y = 0;
+  checkCorrectInput();
+  console.log(checkCorrectInput());
+  if(checkCorrectInput() != true){
+    response.json({
+      status: 'input-error',
+      errorObject: checkCorrectInput()
+    });
+  }
+  else{
+    main();
+    response.json({
+      status: 'success',
+    });
+  }
 });
 
 // GET ALL THE STORED INFO TO THE CLIENT
@@ -206,6 +245,10 @@ app.get('/all', (request, response) => {
     }
     response.json(data);
   });
+});
+
+app.get('/expedition/:id', (request, response) => {
+  database.find();
 });
 //const data = inputt;
 //array = data.split("\n");
@@ -242,11 +285,79 @@ function storeIteration(){
     number_of_lost_robots: num_lost_robots,
     paths_of_robots: paths_robots,
     number_of_actions_per_robot: number_actions_per_robot,
+    surface_of_mars: grid_squares,
     explored_surface_by_robot: explored_surface_by_robot,
     explored_surface_total: explored_surface_total
   } 
   database.insert(expedition);
   console.log(expedition);
+}
+/*
+function simpleAnalytics(){
+  db.find({ }, function (err, docs) {
+    Array.from(docs).forEach(element => {
+      all_num_robots +=  "number_of_robots";
+    })
+
+  });
+  perc_explored_surface = (explored_surface_total/grid_squares)*100;
+  perc_explored_surface_by_robot = 
+  perc_lost_robots = 
+  average_num_robots =
+  average_num_instructions_robot = 
+}
+*/
+function checkCorrectInput(){
+  errorObject = [];
+  const data = inputt;
+  array = data.split("\n");
+  for (i=0; i < array.length; i++){
+    array_info[i] = array[i].split(" ");
+  }
+  map_x = parseInt(array_info[0][0]);
+  map_y = parseInt(array_info[0][1]);
+
+  // check map coordinates are at max 50
+  if (map_x > 50 || map_y > 50 || map_x < 0 || map_y < 0){
+    //console.error("The maximum value for any coordenate is 50 and the minimum is 0");
+    errorType = 1;
+    errorMesage = "The maximum value for any coordenate is 50 and the minimum is 0";
+    errorObject.push(errorType);
+    errorObject.push(errorMesage);
+    //console.log(errorObject);
+    return errorObject;
+  }
+
+  init();
+  createRobots();
+  //len = array.length;
+  //num_robots = (len-1)/2;
+  //robots = new Array(num_robots);
+  for (var i = 0; i < num_robots; ++i) {
+
+    // check that robots spawn within the map grid
+    robots[i].init_x = parseInt(array_info[i+i+1][0]);
+    robots[i].init_y = parseInt(array_info[i+i+1][1]);
+    if (robots[i].init_x > map_x | robots[i].init_x < 0 | robots[i].init_y > map_y | robots[i].init_y < 0){
+      //console.error("The robots must spawn within the map grid.");
+      errorType = 2;
+      errorMesage = "The robots must spawn within the map grid.";
+      errorObject.push(errorType);
+      errorObject.push(errorMesage);
+      return errorObject;
+    }
+
+    //check that the maximum number of instructions for a robot is less than 100
+    if(array[i+i+2].length > 99){
+      //console.error("A robot can only take less than 100 instructions.");
+      errorType = 3;
+      errorMesage = "A robot can only take less than 100 instructions.";
+      errorObject.push(errorType);
+      errorObject.push(errorMesage);
+      return errorObject;
+    }
+  }
+  return true;
 }
 
 //initialize the problem and get all the initial data from the input file
@@ -257,15 +368,18 @@ function init(){
     array_info[i] = array[i].split(" ");
     //console.log(array_info[i][1]);
   }
-  console.log(data);
+  //console.log(data);
   map_x = parseInt(array_info[0][0]);
   map_y = parseInt(array_info[0][1]);
+  //console.log(map_y);
   //map_x = parseInt(array[0][0]);
   //map_y = parseInt(array[0][1]);
   //console.log(map_y);
-  if (map_x > 50 && map_y > 50){
-    console.error("The maximum value for any coordenate is 50");
-    process.exit();
+  if (map_x > 50 || map_y > 50 || map_x < 0 || map_y < 0){
+    //console.error("The maximum value for any coordenate is 50 and the minimum is 0");
+    //alert('The maximum value for any coordenate is 50');
+    //process.exit();
+    //return("");
   }
   iteration += 1;
   len = array.length;
@@ -288,8 +402,8 @@ function initialiseGrid(){
 
   for (var i=0; i < map_y+1; ++i){
     for(var ii=0; ii < map_x+1; ++ii){
-      grid[i][ii] = new Array(num_robots+1);
-      for (var iii=0; iii < (num_robots+1); ++iii){
+      grid[i][ii] = new Array(num_robots+2);
+      for (var iii=0; iii < (num_robots+2); ++iii){
         grid[i][ii][iii] = -1;
       }
     }
@@ -304,7 +418,7 @@ function initialiseGrid(){
   function Robot(){
     this.init_x = 0;
     this.init_y = 0;
-    this.init_direction = "N";
+    this.init_direction = "";
     this.outOfBounds = false;
   }
 
@@ -323,16 +437,21 @@ function initialiseGrid(){
         robots[i].init_y = parseInt(array_info[i+i+1][1]);
         robots[i].init_direction = array_info[i+i+1][2];
 
+        console.log(robots[i].init_direction);
         robots[i].curr_x = robots[i].init_x;
         robots[i].curr_y = robots[i].init_y;
         robots[i].curr_direction = robots[i].init_direction;
 
-        grid[robots[i].init_y][robots[i].init_x][i+1] = i;
+        grid[robots[i].init_y][robots[i].init_x][i+2] = i;
+        grid[robots[i].init_y][robots[i].init_x][1] = 1;
+
+        num_lost_robots = 0;
+        explored_surface_by_robot[i] = 0;
         // if any robot is spawn outside of the map bounds it gives an error and the program execution finishes
         if (robots[i].init_x > map_x | robots[i].init_x < 0 | robots[i].init_y > map_y | robots[i].init_y < 0){
-          console.error("The robots must spawn within the map grid.");
-          iteration -=1;
-          process.exit();
+          //console.error("The robots must spawn within the map grid.");
+          //iteration -=1;
+          //process.exit();
         }
     }
   }
@@ -345,9 +464,9 @@ function initialiseGrid(){
       number_actions_per_robot[i] = 0;
       // max number of structions allowed per robot
       if(array[i+i+2].length > 99){
-        console.error("A robot can only take less than 100 instructions.");
-        iteration -=1;
-        process.exit();
+        //console.error("A robot can only take less than 100 instructions.");
+        //iteration -=1;
+        //process.exit();
       }
 
     Array.from(array[i+i+2]).forEach(element => {
@@ -423,7 +542,8 @@ if (element == "F"){
             robots[i].curr_x = new_x;
             robots[i].curr_y = new_y;
             robots[i].curr_direction = new_direction;
-            grid[robots[i].curr_y][robots[i].curr_x][i+1] = i;
+            grid[robots[i].curr_y][robots[i].curr_x][i+2] = i;
+            grid[robots[i].curr_y][robots[i].curr_x][1] = 1;
             paths_robots[i].push([robots[i].curr_x, robots[i].curr_y, robots[i].curr_direction]);
             break;
         case "E":
@@ -447,7 +567,8 @@ if (element == "F"){
             robots[i].curr_x = new_x;
             robots[i].curr_y = new_y;
             robots[i].curr_direction = new_direction;
-            grid[robots[i].curr_y][robots[i].curr_x][i+1] = i;
+            grid[robots[i].curr_y][robots[i].curr_x][i+2] = i;
+            grid[robots[i].curr_y][robots[i].curr_x][1] = 1;
             paths_robots[i].push([robots[i].curr_x, robots[i].curr_y, robots[i].curr_direction]);
             break;
         case "S":
@@ -471,7 +592,8 @@ if (element == "F"){
             robots[i].curr_x = new_x;
             robots[i].curr_y = new_y;
             robots[i].curr_direction = new_direction;
-            grid[robots[i].curr_y][robots[i].curr_x][i+1] = i;
+            grid[robots[i].curr_y][robots[i].curr_x][i+2] = i;
+            grid[robots[i].curr_y][robots[i].curr_x][1] = 1;
             paths_robots[i].push([robots[i].curr_x, robots[i].curr_y, robots[i].curr_direction]);
             break;
         case "W":
@@ -495,7 +617,8 @@ if (element == "F"){
             robots[i].curr_x = new_x;
             robots[i].curr_y = new_y;
             robots[i].curr_direction = new_direction;
-            grid[robots[i].curr_y][robots[i].curr_x][i+1] = i;
+            grid[robots[i].curr_y][robots[i].curr_x][i+2] = i;
+            grid[robots[i].curr_y][robots[i].curr_x][1] = 1;
             paths_robots[i].push([robots[i].curr_x, robots[i].curr_y, robots[i].curr_direction]);
           break;
         }
@@ -509,8 +632,19 @@ if (element == "F"){
   } // end of function movement
 
   function calcExploration(){
-    explored_surface_by_robot;
-    explored_surface_total;
+    explored_surface_total = 0;
+    for (i=0; i<map_y+1; ++i){
+      for (ii=0; ii<map_x+1; ++ii){
+        for (iii=2; iii<num_robots+2; ++iii){
+          if(grid[i][ii][iii] == iii-2){
+            explored_surface_by_robot[iii-2] +=1;
+          }
+        }
+        if(grid[i][ii][1] == 1){
+          explored_surface_total +=1;
+        }
+      }
+    }
   }
   
  // movement();

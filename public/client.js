@@ -24,6 +24,13 @@ function setup(){
 
 //const { response } = require("express");
 
+let pages = document.querySelectorAll(".page");
+for(let i=0; i < pages.length; i++){
+    pages[i].style.display = "none";
+}
+pages[0].style.display = "block";
+
+
 //copy example to clipboard
 function copyEvent(id)
 {
@@ -46,11 +53,18 @@ function postInput(id){
     },
     body: JSON.stringify(input_data)
     }
-    console.log(input_data);
+    //console.log(input_data);
 
 fetch('/api', options).then(response =>{
-    console.log(response);
-    });
+    info = response.json();
+    console.log(info);
+    //console.log(info.blob);
+    //return info.blob;
+    //.then(info => {
+      //  const TypeErr = info.errorObject;
+       // console.log(TypeErr);
+    //});
+});
 }
 
 getData();
@@ -60,14 +74,29 @@ async function getData() {
 
     for (item of data){
         const root = document.createElement('div');
+        //root.setAttribute(class, "each-expedition");
+        root.className ="each-expedition";
         //const iteration = document.createElement('div');
         const input = document.createElement('div');
         const output = document.createElement('div');
+        const num_robots = document.createElement('div');
+        const num_lost_robots = document.createElement('div');
+        const path_robots = document.createElement('div');
+        const num_actions_robot = document.createElement('div');
+        const explored_surf_robot = document.createElement('div');
+        const explored_surf_total = document.createElement('div');
 
-        input.textContent = `input: ${item.input}`;
-        output.textContent = `output: ${item.output}`;
+        input.innerText = `input: ${item.input}`;
+        output.innerText = `output: ${item.output}`;
+        num_robots.textContent = `number of robots : ${item.number_of_robots}`;
+        num_lost_robots.textContent = `number of lost robots: ${item.number_of_lost_robots}`;
+        path_robots.textContent = `paths of robots: ${item.paths_of_robots}`;
+        num_actions_robot.textContent = `number of actions per robot: ${item.number_of_actions_per_robot}`;
+        explored_surf_robot.textContent = `explored surface per robot: ${item.explored_surface_by_robot}`;
+        explored_surf_total.textContent = `explored surface of planet: ${item.explored_surface_total}`;
 
-        root.append(input, output);
+        root.append(input, output, num_robots, num_lost_robots, path_robots, num_actions_robot, explored_surf_robot, explored_surf_total);
+        
         document.getElementById("previousExpeditions").append(root);
 
     }

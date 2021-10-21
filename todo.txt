@@ -17,6 +17,7 @@
 
 - tests (mocha)
 npm i --save-dev chai
+npm run test -s
 
 app.get("/showproblem/:id", showProblemById);
 

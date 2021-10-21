@@ -4,7 +4,7 @@
         <meta name = "viewport" content = "width=device-width, initial-scale=1">
         <title>Martian Robots</title>
 
-        <link rel="stylesheet" href="style.css">
+        <link rel="stylesheet" href="index.css">
     </head>
 
     <body>
@@ -29,11 +29,15 @@
         <main class="container">
 
             <div class="page" id="homePage">
-                homepage
                 <div class="instructions">
                     <p>
-                        Please enter the problem input.<br>
-                        This is a sample of the input format. <br><br>
+                        <h1>Explore Mars!</h1>
+                        <br>
+                        You're about to send robots on an expedition to Mars.
+                        <br>
+                        You must write the instructions of the expedition in the textbox below. <br>
+                        Here's an example of the input format. You can copy it and paste it into the text box and send your first expedition now!
+                        <br><br>
                         <p id="copy">
                             5 3 <br>
                             1 1 E <br>
@@ -43,27 +47,47 @@
                             0 3 W<br>
                             LLFFFRFLFL<br>
                         </p>
+                        <button type="button" onclick="copyEvent('copy')">Copy the example!</button>
+                        <br><br>
+                        The first line of the instructions represents the x and y coordenates of the map of Mars.
+                        <br>
+                        Then you must write two lines for each robot: 
+                        <br>
+                        The first one represents the starting position of the robot. That is the x and y coordinates as well as the orientation (N, E, S or W).
+                        <br>
+                        The second one represents the instructions the robot will follow (R, L or F).
+                        <br>
+                        Once you've send the robots to Mars, you can go to the "Previous Expeditions" page and check the journey's data.
+                    </p>
+                <br>
+                    <p class="edge-cases">
+                        When writing the instructions please keep in mind a few things:
+                        <br>
+                        - The maximum value for any coordenate must be 50
+                        <br>
+                        - The number of instructions you can assign to a robot must be less than 100
+                        <br>        
+                        - The starting position of all robots must be within the map grid
                     </p>
                 </div>
                 <br>
                 <div style="text-align:center;">
-                    <button type="button" onclick="copyEvent('copy')">Copy</button>
                     <br><br>
                     <form>
                         <textarea cols=40 rows=10 id="textinput"></textarea>
                         <br><br>
-                        <button type="button" onclick="postInput('textinput')" >Run</button>
+                        <button type="button" onclick="postInput('textinput')" >Begin expedition!</button>
                     </form>
-        
+                    <br><br>
                 </div>
             </div>
 
             <div class="page" id="previousExpeditions">
-                problems
+                
             </div>
 
             <div class="page" id="insights">
-                robots
+                
             </div>
 
         </main>
