@@ -76,8 +76,7 @@ In this case, the output of the problem will be printed in the terminal.
 You can access the problem by typing the following `node app.js` in the command line (notice how no other argument should be passed).
 
 In this case, the user must refer to the indicated web server and enter the input there.
-If the server was initialized from the command line the user will also be able to see the problem output in the terminal.
-Otherwise, it will only be visible on the web.
+The output of the problem will be visible on the web and in the terminal.
 
 The website is a SPA with the following structure:
 - **New expedition:** It is the main page.  Here, the user is presented with the instructions for running the programme and a textbox in which they can introduce the problem input.
