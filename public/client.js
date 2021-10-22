@@ -1,4 +1,3 @@
-
 // set the initial page to "New expedition"
 let pages = document.querySelectorAll(".page");
 for(let i=0; i < pages.length; i++){
