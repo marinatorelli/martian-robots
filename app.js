@@ -33,6 +33,10 @@ var paths_robots = [];
 var final_robots = "";
 var expedition = "";
 
+
+var accepted_commands = ["L", "R", "F"];
+var num_accepted_commands = accepted_commands.length;
+
 // for data calculated from expeditions
 var number_actions_per_robot = [];
 var num_lost_robots = 0;
@@ -52,7 +56,7 @@ var ana_explored_surface =0;
 var counter = 0;
 
 var errorType = -1;
-var errorMesage = "";
+var errorMessage = "";
 var errorObject = [];
 
 var inputt = "";
@@ -73,6 +77,7 @@ if (args.length == 3 ){
   checkCorrectInput();
   if(checkCorrectInput() != true){
     console.log(errorObject); 
+    process.exit();
   }
   else{
     main();
@@ -159,10 +164,9 @@ function checkCorrectInput(){
   if (map_x > 50 || map_y > 50 || map_x < 0 || map_y < 0){
     //console.error("The maximum value for any coordenate is 50 and the minimum is 0");
     errorType = 1;
-    errorMesage = "The maximum value for any coordenate is 50 and the minimum is 0";
+    errorMessage = "The maximum value for any coordenate is 50 and the minimum is 0";
     errorObject.push(errorType);
-    errorObject.push(errorMesage);
-    //console.log(errorObject);
+    errorObject.push(errorMessage);
     return errorObject;
   }
 
@@ -177,9 +181,9 @@ function checkCorrectInput(){
     if (robots[i].init_x > map_x | robots[i].init_x < 0 | robots[i].init_y > map_y | robots[i].init_y < 0){
       //console.error("The robots must spawn within the map grid.");
       errorType = 2;
-      errorMesage = "The robots must spawn within the map grid.";
+      errorMessage = "The robots must spawn within the map grid.";
       errorObject.push(errorType);
-      errorObject.push(errorMesage);
+      errorObject.push(errorMessage);
       return errorObject;
     }
 
@@ -187,11 +191,26 @@ function checkCorrectInput(){
     if(array[i+i+2].length > 99){
       //console.error("A robot can only take less than 100 instructions.");
       errorType = 3;
-      errorMesage = "A robot can only take less than 100 instructions.";
+      errorMessage = "A robot can only take less than 100 instructions.";
       errorObject.push(errorType);
-      errorObject.push(errorMesage);
+      errorObject.push(errorMessage);
       return errorObject;
     }
+
+    // check the instructions line has only valid instructions
+    for (ii=0; ii < array[i+i+2].length; ++ii){
+      for(j=0; j < num_accepted_commands; ++j){
+        if(!accepted_commands.includes(array[i+i+2][ii])){
+          errorType = 4;
+          errorMessage = "The command is not a valid instruction.";
+          errorObject.push(errorType);
+          errorObject.push(errorMessage);
+          return errorObject;
+        }
+      }
+    }
+    
+ 
   }
   // if everything is fine
   return true;
@@ -290,6 +309,7 @@ function createRobots() {
 
       // iterates through the instruction line
       Array.from(array[i+i+2]).forEach(element => {
+        //console.log(accepted_commands.includes(element));
         current_position = [];
         number_actions_per_robot[i] +=1;
         var new_x = "";
