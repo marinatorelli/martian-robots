@@ -11,7 +11,7 @@ app.use(express.json());
 app.listen(port, function() {
   console.log(`Server running at ${port}`);
 });
-
+module.exports = app;
 // define and load the DATABASE 
 const database = new Datastore("database.db");
 database.loadDatabase();
@@ -162,9 +162,9 @@ function checkCorrectInput(){
 
   // check map coordinates are at max 50
   if (map_x > 50 || map_y > 50 || map_x < 0 || map_y < 0){
-    //console.error("The maximum value for any coordenate is 50 and the minimum is 0");
+    //console.error("The maximum value for any coordinate is 50 and the minimum is 0");
     errorType = 1;
-    errorMessage = "The maximum value for any coordenate is 50 and the minimum is 0";
+    errorMessage = "The maximum value for any coordinate is 50 and the minimum is 0";
     errorObject.push(errorType);
     errorObject.push(errorMessage);
     return errorObject;

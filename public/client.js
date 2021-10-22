@@ -46,23 +46,32 @@ async function getData() {
         root.className ="each-expedition";
         const input = document.createElement('div');
         const output = document.createElement('div');
+
         const num_robots = document.createElement('div');
         const num_lost_robots = document.createElement('div');
         const path_robots = document.createElement('div');
         const num_actions_robot = document.createElement('div');
+
+        const surface_of_mars = document.createElement('div');
         const explored_surf_robot = document.createElement('div');
         const explored_surf_total = document.createElement('div');
+        const perc_explored_surface = document.createElement('div');
 
         input.innerText = `input: ${item.input}`;
         output.innerText = `output: ${item.output}`;
-        num_robots.textContent = `number of robots : ${item.number_of_robots}`;
-        num_lost_robots.textContent = `number of lost robots: ${item.number_of_lost_robots}`;
-        path_robots.textContent = `paths of robots: ${item.paths_of_robots}`;
-        num_actions_robot.textContent = `number of actions per robot: ${item.number_of_actions_per_robot}`;
-        explored_surf_robot.textContent = `explored surface per robot: ${item.explored_surface_by_robot}`;
-        explored_surf_total.textContent = `explored surface of planet: ${item.explored_surface}`;
 
-        root.append(input, output, num_robots, num_lost_robots, path_robots, num_actions_robot, explored_surf_robot, explored_surf_total);
+        num_robots.textContent = `Number of robots : ${item.number_of_robots}`;
+        num_lost_robots.textContent = `Of those lost: ${item.number_of_lost_robots}`;
+        path_robots.textContent = `Paths of robots: ${item.paths_of_robots}`;
+        num_actions_robot.textContent = `Number of actions per robot: ${item.number_of_actions_per_robot}`;
+
+        surface_of_mars.textContent = `Surface of Mars: ${item.surface_of_mars}`;
+        explored_surf_robot.textContent = `Explored surface per robot: ${item.explored_surface_by_robot}`;
+        explored_surf_total.textContent = `Explored surface of planet: ${item.explored_surface}`;
+        perc_explored_surface.textContent = `Percentage of explored surface: ${item.percentage_explored_surface}`;
+
+
+        root.append(input, output, num_robots, num_lost_robots, path_robots, num_actions_robot, surface_of_mars, explored_surf_robot, explored_surf_total, perc_explored_surface);
         document.getElementById("previousExpeditions").append(root);
         //document.getElementById("show-output").innerText = `${item.output}`;
 

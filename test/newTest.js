@@ -12,26 +12,37 @@ describe('Tasks API', () => {
     /**
      * Test the GET route
      */
-    describe("GET /api", () => {
+    describe("GET /expedition", () => {
         it("It should GET all the expeditions", (done) => {
             chai.request(server)
-                .get("/api")
+                .get("/expedition")
                 .end((err, response) => {
                     response.should.have.status(200);
                     response.body.should.be.a('json');
-                    //response.body.length.should.be.eq(3);
                 done();
                 });
         });
-
-        it("It should NOT GET all the tasks", (done) => {
+    });
+    describe("GET /analytics", () => {
+        it("It should GET all the expeditions", (done) => {
             chai.request(server)
-                .get("/api/task")
+                .get("/analytics")
+                .end((err, response) => {
+                    response.should.have.status(200);
+                    response.body.should.be.a('json');
+                done();
+                });
+            });
+
+        it("It should NOT GET anything", (done) => {
+            chai.request(server)
+                .get("/notacall")
                 .end((err, response) => {
                     response.should.have.status(404);
                 done();
                 });
         });
+
 
     });
 });
