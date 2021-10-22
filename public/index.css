@@ -49,5 +49,5 @@ li a:hover {
     padding: 20px;
     background-color: #757bc8;
     margin: 10px;
-
+    width: fit-content;
 }

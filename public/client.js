@@ -1,29 +1,5 @@
-/*
-const button = document.getElementById('submit');
-button.addEventListener('click', function(e) {
-  console.log('button was clicked');
 
-  fetch('/runproblem', {method: 'POST'})
-    .then(function(response) {
-      if(response.ok) {
-        console.log('robot was recorded');
-        return;
-      }
-      throw new Error('Request failed.');
-    })
-    .catch(function(error) {
-      console.log(error);
-    });
-});
-
-function setup(){
-    var button = select("#submit");
-    button.mousePressed(submitSimulation);
-}
-*/
-
-//const { response } = require("express");
-
+// set the initial page to "New expedition"
 let pages = document.querySelectorAll(".page");
 for(let i=0; i < pages.length; i++){
     pages[i].style.display = "none";
@@ -38,45 +14,36 @@ function copyEvent(id)
     window.getSelection().selectAllChildren(str);
     document.execCommand("Copy");
 }
-//const button = document.getElementById('submit');
-//button.addEventListener('submit', postInput);
 
+//send input to server
 function postInput(id){
     const input_data = {
         input: document.getElementById(id).value
     } 
-    console.log(input_data);
     const options = {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(input_data)
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(input_data)
     }
-    //console.log(input_data);
+    fetch('/api', options).then(response =>{
+        info = response.json();
+        console.log(info);
+    });
 
-fetch('/api', options).then(response =>{
-    info = response.json();
-    console.log(info);
-    //console.log(info.blob);
-    //return info.blob;
-    //.then(info => {
-      //  const TypeErr = info.errorObject;
-       // console.log(TypeErr);
-    //});
-});
 }
-
 getData();
+getAnalytics();
+
+// function to show the data from all expeditions in the "Previous Expeditions" page
 async function getData() {
-    const response = await fetch('/all');
+    const response = await fetch('/expeditions');
     const data = await response.json();
 
     for (item of data){
         const root = document.createElement('div');
-        //root.setAttribute(class, "each-expedition");
         root.className ="each-expedition";
-        //const iteration = document.createElement('div');
         const input = document.createElement('div');
         const output = document.createElement('div');
         const num_robots = document.createElement('div');
@@ -93,20 +60,50 @@ async function getData() {
         path_robots.textContent = `paths of robots: ${item.paths_of_robots}`;
         num_actions_robot.textContent = `number of actions per robot: ${item.number_of_actions_per_robot}`;
         explored_surf_robot.textContent = `explored surface per robot: ${item.explored_surface_by_robot}`;
-        explored_surf_total.textContent = `explored surface of planet: ${item.explored_surface_total}`;
+        explored_surf_total.textContent = `explored surface of planet: ${item.explored_surface}`;
 
         root.append(input, output, num_robots, num_lost_robots, path_robots, num_actions_robot, explored_surf_robot, explored_surf_total);
-        
         document.getElementById("previousExpeditions").append(root);
+        //document.getElementById("show-output").innerText = `${item.output}`;
 
     }
-    //console.log(data);
+}
+
+// function to show the calculated data in the "Data insights" page
+async function getAnalytics() {
+    const response_analytics = await fetch('/analytics');
+    const data_analytics = await response_analytics.json();
+
+    for (item of data_analytics){
+        const root_analytics = document.createElement('div');
+        root_analytics.className = "each-expedition";
+
+        const total_number_of_robots = document.createElement('div');
+        const average_number_of_robots = document.createElement('div');
+        const total_number_lost_robots = document.createElement('div');
+        const average_number_of_lost_robots = document.createElement('div');
+        const percentage_of_lost_robots = document.createElement('div');
+        const average_surface_of_mars = document.createElement('div');
+        const percentage_of_explored_surface = document.createElement('div');
+
+        total_number_of_robots.innerText = `Total number of robots sent to Mars (all expeditions): ${item.number_robots_analytics}`;
+        average_number_of_robots.innerText = `Average number of robots sent to Mars per expedition: ${item.average_number_robots}`;
+        total_number_lost_robots.innerText = `Total number of lost robots (all expeditions): ${item.number_lost_robots_analytics}`;
+        average_number_of_lost_robots.innerText = `Average number of lost robots per expedition: ${item.average_lost_robots}`;
+        percentage_of_lost_robots.innerText = `Percentage of robots lost (all expeditions): ${item.percentage_lost_robots}`;
+        average_surface_of_mars.innerText = `Average size of Mars' surface: ${item.average_surface_mars}`;
+        percentage_of_explored_surface.innerText = `Percentage of explored surface (all expeditions): ${item.percentage_explored_surface}`;
+
+        root_analytics.append(total_number_of_robots, average_number_of_robots, total_number_lost_robots, average_number_of_lost_robots, percentage_of_lost_robots, average_surface_of_mars, percentage_of_explored_surface);
+        document.getElementById("insights").append(root_analytics);
+    }
 }
 
 window.onhashchange = function(){
-    //render function is called every has change
+    //render function is called every hash change
     render(window.location.hash);
 };
+
 
 //** SPA NAVIGATION **/
 
@@ -138,6 +135,7 @@ function render(hashKey){
         case "#previous":
             pages[1].style.display = "block";
             document.getElementById("li_previous").classList.add("active");
+            //getData();
             break;
         case "#insights":
             pages[2].style.display = "block";
@@ -149,51 +147,3 @@ function render(hashKey){
             break;
     }
 }
-/*
-function submitSimulation(){
-    var txt = select("#textinput").value();
-    var data = {
-        text:txt
-    }
-    
-    httpPost('run/', data, 'json', dataPosted, postErr);
-}
-
-function dataPosted(result){
-    console.log(result);
-}
-
-function postErr(err){
-    console.log(err);
-}
-
-s
-function setup(){
-    loadJSON("/all", gotData);
-    console.log("running");
-
-   // const button = document.getElementById("submit");
-    //button.mousePressed(submitProblem);
-}
-
-function gotData(){
-    console.log(data);
-}
-
-/*
-function submitProblem(){
-    var txt = document.getElementById("textinput").value;
-    var data = {
-        text: txt
-    }
-    httpPost("newproblem/", data, "json", dataPosted, PostErr);
-}
-
-function dataPosted(result){
-    console.log(result);
-}
-
-function PostErr(err){
-    console.log(err);
-}
-*/
