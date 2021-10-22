@@ -1,8 +1,11 @@
 {
   "name": "martian-robots",
   "version": "1.0.0",
+  "engines": {
+    "node": "14.18.1"
+  },
   "description": "Code challenge for GuideSmiths Software Engineer Intern",
-  "main": "app.js",
+  "main": "server.js",
   "scripts": {
     "test": "mocha || true"
   },
