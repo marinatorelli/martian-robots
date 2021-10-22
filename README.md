@@ -73,9 +73,9 @@ where the file `input.txt` contains the input of the problem in the correct form
 In this case, the output of the problem will be printed in the terminal.
 
 ### REST API approach: 
-You can access the problem by going to the deployed website "" or by typing the following `node app.js` in the command line (notice how no other argument should be passed).
+You can access the problem by typing the following `node app.js` in the command line (notice how no other argument should be passed).
 
-In this case, the user must refer to said web server and enter the input there.
+In this case, the user must refer to the indicated web server and enter the input there.
 If the server was initialized from the command line the user will also be able to see the problem output in the terminal.
 Otherwise, it will only be visible on the web.
 
